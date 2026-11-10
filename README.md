@@ -23,8 +23,13 @@ tooling) and imports `fleet.nixosModules.default`.
 
 ## One MCP for the fleet
 
-- The hub (`fleet.hub = true`) is public over T3 Connect. Its `/mcp` URL is the
-  connector URL; approve the connector's sign-in with your T3 account and pick
+- The hub (`fleet.hub = true`, `fleet.funnel = true`) is public through
+  Tailscale Funnel: the connector URL is `https://<hub>.<tailnet>:8443/mcp`. It
+  stays the same across reinstalls as long as the hub keeps its name. Funnel
+  exposes the whole T3 server there, not only `/mcp`; every route still needs a
+  sign-in.
+- Approving the connector: its sign-in page opens on the hub and asks for a
+  code. Make one on the hub with `t3 auth pairing create --ttl 5m` and pick
   **Full access**. A sign-in lasts 30 days.
 - Membership is the Tailscale tag `tag:t3-fleet`. The hub's `t3-fleet-link`
   timer (3 minutes after boot, then every 6 hours) links every tagged machine
@@ -34,7 +39,8 @@ tooling) and imports `fleet.nixosModules.default`.
   links: `t3 environment list`.
 - It mints each machine's pairing code over SSH with the hub's key, which is in
   `fleet.sshKeys`; if the hub is reinstalled, put its new key there.
-- The tag's owner is set in the tailnet policy (`tagOwners`: admins).
+- The tailnet policy names the tag's owner (`tagOwners`: admins) and allows
+  Funnel for it (`nodeAttrs`).
 
 ## Add a machine
 
@@ -50,7 +56,5 @@ hub does it now. Nothing to change on the hub.
 
 ## A new hub
 
-On the new hub: `fleet.hub = true`, then `t3 connect link --headless`, approve,
-`systemctl --user restart t3code`, and give the connector its new URL
-(`t3 connect status` / the T3 app's **Copy MCP URL**). Its SSH key goes into
-`fleet.sshKeys`.
+Set `fleet.hub = true` and `fleet.funnel = true` on it, put its SSH key into
+`fleet.sshKeys`, and give the connector its URL. Unset both on the old hub.

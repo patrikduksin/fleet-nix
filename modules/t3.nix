@@ -7,10 +7,12 @@
 #
 # It listens on all interfaces; the firewall only lets the tailnet in, where it
 # is also served on HTTPS (t3-tailscale-serve): https://<host>.<tailnet>:8443.
-# iOS refuses plain HTTP, and agents only sign in over HTTPS.
+# iOS refuses plain HTTP, and agents only sign in over HTTPS. With fleet.funnel
+# the same address is public, through Tailscale Funnel.
 { config, lib, pkgs, ... }:
 let
   cfg = config.fleet;
+  port = toString cfg.servePort;
 
   # Linked environments is a Labs setting in T3's own settings.json; T3 keeps
   # the rest of the file, so only this key is set, before each start.
@@ -70,7 +72,14 @@ in
     };
     script = ''
       until tailscale status --json | jq -e '.BackendState == "Running"' >/dev/null; do sleep 5; done
-      tailscale serve --bg --https=${toString cfg.servePort} http://127.0.0.1:3773
-    '';
+    '' + (if cfg.funnel then ''
+      tailscale funnel --bg --https=${port} http://127.0.0.1:3773
+    '' else ''
+      # Funnel off: take the port off the internet if it was on.
+      if tailscale serve status --json | jq -e '(.AllowFunnel // {}) | keys | any(endswith(":${port}"))' >/dev/null; then
+        tailscale funnel --https=${port} off
+      fi
+      tailscale serve --bg --https=${port} http://127.0.0.1:3773
+    '');
   };
 }

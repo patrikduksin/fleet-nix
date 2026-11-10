@@ -26,7 +26,12 @@ in
 
     hub = mkEnableOption ''
       this machine as the fleet hub: the one machine a hosted agent signs in to
-      (over T3 Connect), which links every other machine tagged `fleet.tag`'';
+      (through fleet.funnel), which links every other machine tagged `fleet.tag`'';
+
+    funnel = mkEnableOption ''
+      Tailscale Funnel on `servePort`: T3 Code, and so its /mcp, public at
+      https://<host>.<tailnet>:<servePort>. The hub's public MCP for hosted
+      agents; the tailnet policy must allow Funnel for `tag`'';
 
     tag = mkOption {
       type = types.str;
