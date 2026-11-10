@@ -1,0 +1,48 @@
+{
+  "nodes": {
+    "agents-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1794333280,
+        "narHash": "sha256-ROfR7bkETxhvmtycvUwQPQk7NJgrSVia8j8gopG7tNY=",
+        "owner": "patrikduksin",
+        "repo": "agents-nix",
+        "rev": "3ff0e12c20eb3a3a1a3b8e9d94884f1e8f4bcb47",
+        "type": "github"
+      },
+      "original": {
+        "owner": "patrikduksin",
+        "repo": "agents-nix",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1794042290,
+        "narHash": "sha256-ziZn2PvCJE5JEEpqTdxXwJpPB+L3YqoCpTAMCzyaP3U=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "f4a03c008967841f2a0b3cb7c436fc6fc31671f6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "agents-nix": "agents-nix",
+        "nixpkgs": "nixpkgs"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
