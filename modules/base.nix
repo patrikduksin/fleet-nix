@@ -18,6 +18,7 @@ in
 
   services.openssh = {
     enable = true;
+    openFirewall = cfg.publicSsh; # tailnet-only otherwise (tailscale0 is trusted)
     settings = {
       PasswordAuthentication = false;
       KbdInteractiveAuthentication = false;
@@ -25,12 +26,18 @@ in
     };
   };
 
-  # Public: SSH and Tailscale only; everything else over the tailnet.
+  # Nothing is public but Tailscale's own WireGuard port (UDP 41641, for direct
+  # peer connections) and, on the hub, the MCP through Funnel (which arrives over
+  # Tailscale too). SSH and every service are tailnet-only unless fleet.publicSsh.
   networking.firewall = {
     enable = true;
-    allowedTCPPorts = [ 22 ];
+    allowedTCPPorts = lib.optional cfg.publicSsh 22;
+    allowPing = false;
     trustedInterfaces = [ "tailscale0" ];
   };
+  # mDNS (UDP 5353) is for finding devices on a local network; a server has
+  # none. Avahi may still run (Sunshine turns it on), just not open to the world.
+  services.avahi.openFirewall = lib.mkDefault false;
   services.tailscale = {
     enable = true;
     openFirewall = true;

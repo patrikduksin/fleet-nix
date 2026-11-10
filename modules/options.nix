@@ -29,9 +29,21 @@ in
       (through fleet.funnel), which links every other machine tagged `fleet.tag`'';
 
     funnel = mkEnableOption ''
-      Tailscale Funnel on `servePort`: T3 Code, and so its /mcp, public at
-      https://<host>.<tailnet>:<servePort>. The hub's public MCP for hosted
-      agents; the tailnet policy must allow Funnel for `tag`'';
+      the public MCP: Tailscale Funnel on `publicPort` with only /mcp and its
+      sign-in (OAuth discovery, /oauth/mcp, the sign-in page and its assets) at
+      https://<host>.<tailnet>:<publicPort>/mcp. Everything else of T3 Code stays
+      tailnet-only. The tailnet policy must allow Funnel for `tag`'';
+
+    publicPort = mkOption {
+      type = types.enum [ 443 8443 10000 ];
+      default = 10000;
+      description = "Funnel port for the public MCP (Funnel allows 443, 8443, 10000); not servePort.";
+    };
+
+    publicSsh = mkEnableOption ''
+      SSH from the internet on port 22. Off: SSH, like everything else, is
+      reachable over the tailnet only. Keep the provider's rescue console in
+      mind for when Tailscale is down'';
 
     tag = mkOption {
       type = types.str;

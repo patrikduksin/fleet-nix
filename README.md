@@ -10,8 +10,12 @@ tooling) and imports `fleet.nixosModules.default`.
 ## What every machine gets
 
 - **Base** (`modules/base.nix`): user `patrik` with my SSH keys (also root),
-  passwordless sudo, SSH by key only, firewall open for SSH and the tailnet only,
-  Tailscale kept up, mosh, flakes, weekly GC.
+  passwordless sudo, SSH by key only, Tailscale kept up, mosh, flakes, weekly GC.
+  **Nothing is public**: SSH and every service answer on the tailnet only (no
+  ping, no mDNS); the one open port is Tailscale's own WireGuard (UDP 41641).
+  `fleet.publicSsh = true` opens SSH on 22 for a machine that needs it. With
+  SSH tailnet-only, a machine whose Tailscale is down is reached through the
+  provider's rescue console.
 - **T3 Code** (`modules/t3.nix`): nightly, as a user service, on tailnet HTTPS
   at `https://<host>.<tailnet>:8443`, with linked environments on.
 - **Updates** (`modules/updates.nix`): every input (nixpkgs, this repo,
@@ -23,11 +27,14 @@ tooling) and imports `fleet.nixosModules.default`.
 
 ## One MCP for the fleet
 
-- The hub (`fleet.hub = true`, `fleet.funnel = true`) is public through
-  Tailscale Funnel: the connector URL is `https://<hub>.<tailnet>:8443/mcp`. It
-  stays the same across reinstalls as long as the hub keeps its name. Funnel
-  exposes the whole T3 server there, not only `/mcp`; every route still needs a
-  sign-in.
+- The hub (`fleet.hub = true`, `fleet.funnel = true`) serves only its MCP
+  publicly, through Tailscale Funnel: the connector URL is
+  `https://<hub>.<tailnet>:10000/mcp`. It stays the same across reinstalls as
+  long as the hub keeps its name. Funnel passes only `/mcp`, OAuth discovery
+  (`/.well-known`), `/oauth/mcp`, the sign-in page (`/connect-agent`, its
+  `/assets` and icons) and `/api/auth/session` (which tells a stranger "not
+  signed in"); everything else is 404 there. The rest of T3 Code, the app
+  included, is on the tailnet at `:8443`.
 - Approving the connector: its sign-in page opens on the hub and asks for a
   code. Make one on the hub with `t3 auth pairing create --ttl 5m` and pick
   **Full access**. A sign-in lasts 30 days.

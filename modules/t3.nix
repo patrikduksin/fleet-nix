@@ -13,6 +13,23 @@
 let
   cfg = config.fleet;
   port = toString cfg.servePort;
+  publicPort = toString cfg.publicPort;
+  # What the public MCP needs, as found by loading T3's sign-in page with
+  # nothing else reachable: the MCP, OAuth discovery and endpoints, the sign-in
+  # page, its static files, and the session probe that page makes (which only
+  # answers "not signed in" to a stranger). Everything else is tailnet-only.
+  publicPaths = [
+    "/mcp"
+    "/.well-known"
+    "/oauth/mcp"
+    "/connect-agent"
+    "/api/auth/session"
+    "/assets"
+    "/favicon.ico"
+    "/apple-touch-icon.png"
+    "/manifest.webmanifest"
+  ];
+  funnelOn = p: "(.AllowFunnel // {}) | keys | any(endswith(\":${p}\"))";
 
   # Linked environments is a Labs setting in T3's own settings.json; T3 keeps
   # the rest of the file, so only this key is set, before each start.
@@ -72,14 +89,20 @@ in
     };
     script = ''
       until tailscale status --json | jq -e '.BackendState == "Running"' >/dev/null; do sleep 5; done
-    '' + (if cfg.funnel then ''
-      tailscale funnel --bg --https=${port} http://127.0.0.1:3773
-    '' else ''
-      # Funnel off: take the port off the internet if it was on.
-      if tailscale serve status --json | jq -e '(.AllowFunnel // {}) | keys | any(endswith(":${port}"))' >/dev/null; then
-        tailscale funnel --https=${port} off
-      fi
+      funnel_on() { tailscale serve status --json | jq -e "$1" >/dev/null; }
+
+      # The whole of T3 Code, on the tailnet only.
+      if funnel_on ${lib.escapeShellArg (funnelOn port)}; then tailscale funnel --https=${port} off; fi
       tailscale serve --bg --https=${port} http://127.0.0.1:3773
+    '' + (if cfg.funnel then ''
+
+      # The public MCP: only these paths, through Funnel.
+      for path in ${lib.escapeShellArgs publicPaths}; do
+        tailscale funnel --bg --https=${publicPort} --set-path="$path" "http://127.0.0.1:3773$path"
+      done
+    '' else ''
+
+      if funnel_on ${lib.escapeShellArg (funnelOn publicPort)}; then tailscale funnel --https=${publicPort} off; fi
     '');
   };
 }
