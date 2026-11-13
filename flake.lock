@@ -7,11 +7,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1794333280,
-        "narHash": "sha256-ROfR7bkETxhvmtycvUwQPQk7NJgrSVia8j8gopG7tNY=",
+        "lastModified": 1794534741,
+        "narHash": "sha256-GOunJ3I+0jvdPN7p8pGbIRpveuC427X8tZz0vW9hKvY=",
         "owner": "patrikduksin",
         "repo": "agents-nix",
-        "rev": "3ff0e12c20eb3a3a1a3b8e9d94884f1e8f4bcb47",
+        "rev": "636539ac5b8debd2856dfe481848c52cb6dbf4a0",
         "type": "github"
       },
       "original": {
