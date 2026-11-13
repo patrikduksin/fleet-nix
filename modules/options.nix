@@ -26,7 +26,7 @@ in
 
     hub = mkEnableOption ''
       this machine as the fleet hub: the one machine a hosted agent signs in to
-      (through fleet.funnel), which links every other machine tagged `fleet.tag`'';
+      (over the tailnet, or publicly with fleet.funnel), which links every other machine tagged `fleet.tag`'';
 
     funnel = mkEnableOption ''
       the public MCP: Tailscale Funnel on `publicPort` with only /mcp and its

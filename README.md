@@ -27,10 +27,13 @@ tooling) and imports `fleet.nixosModules.default`.
 
 ## One MCP for the fleet
 
-- The hub (`fleet.hub = true`, `fleet.funnel = true`) serves only its MCP
-  publicly, through Tailscale Funnel: the connector URL is
-  `https://<hub>.<tailnet>:10000/mcp`. It stays the same across reinstalls as
-  long as the hub keeps its name. Funnel passes only `/mcp`, OAuth discovery
+- The hub (`fleet.hub = true`) is the one machine a hosted agent signs in to.
+  Its connector URL is the tailnet one, `https://<hub>.<tailnet>:8443/mcp`, for
+  agents that can join the tailnet (the Grok connector can); nothing is public.
+  It stays the same across reinstalls as long as the hub keeps its name.
+- For an agent that can't reach the tailnet, `fleet.funnel = true` also serves
+  the MCP publicly through Tailscale Funnel at
+  `https://<hub>.<tailnet>:10000/mcp`. Funnel passes only `/mcp`, OAuth discovery
   (`/.well-known`), `/oauth/mcp`, the sign-in page (`/connect-agent`, its
   `/assets` and icons) and `/api/auth/session` (which tells a stranger "not
   signed in"); everything else is 404 there. The rest of T3 Code, the app
@@ -46,8 +49,8 @@ tooling) and imports `fleet.nixosModules.default`.
   links: `t3 environment list`.
 - It mints each machine's pairing code over SSH with the hub's key, which is in
   `fleet.sshKeys`; if the hub is reinstalled, put its new key there.
-- The tailnet policy names the tag's owner (`tagOwners`: admins) and allows
-  Funnel for it (`nodeAttrs`).
+- The tailnet policy names the tag's owner (`tagOwners`: admins); with
+  `fleet.funnel` it must also allow Funnel for the tag (`nodeAttrs`).
 
 ## Add a machine
 
@@ -63,5 +66,5 @@ hub does it now. Nothing to change on the hub.
 
 ## A new hub
 
-Set `fleet.hub = true` and `fleet.funnel = true` on it, put its SSH key into
-`fleet.sshKeys`, and give the connector its URL. Unset both on the old hub.
+Set `fleet.hub = true` on it, put its SSH key into `fleet.sshKeys`, and give
+the connector its URL. Unset it on the old hub.

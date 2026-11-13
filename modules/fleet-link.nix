@@ -1,6 +1,6 @@
 # One MCP for the whole fleet. The hub links every machine on the tailnet that
 # carries `fleet.tag`, so an agent signed in to the hub's /mcp (the Grok
-# connector, through Funnel) can start, message and stop threads on any of them.
+# connector, over the tailnet) can start, message and stop threads on any of them.
 #
 # Membership is the tag: `tailscale up --advertise-tags=tag:t3-fleet` on a
 # machine, nothing to change on the hub. Every 6 hours, and 3 minutes after

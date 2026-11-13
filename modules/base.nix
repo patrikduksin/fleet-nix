@@ -27,8 +27,8 @@ in
   };
 
   # Nothing is public but Tailscale's own WireGuard port (UDP 41641, for direct
-  # peer connections) and, on the hub, the MCP through Funnel (which arrives over
-  # Tailscale too). SSH and every service are tailnet-only unless fleet.publicSsh.
+  # peer connections) and, with fleet.funnel, the hub's MCP through Funnel (which
+  # arrives over Tailscale too). SSH and every service are tailnet-only unless fleet.publicSsh.
   networking.firewall = {
     enable = true;
     allowedTCPPorts = lib.optional cfg.publicSsh 22;
